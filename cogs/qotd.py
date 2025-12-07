@@ -2,10 +2,10 @@ import discord
 from discord.ext import commands, tasks
 import datetime
 import sqlite3
-from .. import lunaiterconfig
+from .. import lunaiter_config
 
 intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=lunaiterconfig.prefix, intents=intents)
+bot = commands.Bot(description="Discord Bot", command_prefix=lunaiter_config.prefix, intents=intents)
 
 class Buttons(discord.ui.View):
     def __init__(self, suggestion):
@@ -15,7 +15,7 @@ class Buttons(discord.ui.View):
     @discord.ui.button(label="Accept",style=discord.ButtonStyle.green)
     async def accept_qotd(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.edit_message(content="Suggestion accepted!", ephemeral=True)
-        conn = sqlite3.connect("lunaiter-data.db")
+        conn = sqlite3.connect("lunaiter_data.db")
         c = conn.cursor()
         c.execute("INSERT INTO qotd VALUES (?, ?)", (self.suggestion, 0))
         conn.commit()
@@ -48,7 +48,7 @@ class Qotd(commands.Cog):
     @tasks.loop(time=datetime.time(hour=11))
     async def send_qotd(self):
         qotd_channel = bot.get_channel(1038052696143437874)
-        conn = sqlite3.connect("lunaiter-data.db")
+        conn = sqlite3.connect("lunaiter_data.db")
         c = conn.cursor()
         c.execute("SELECT Question FROM qotd WHERE TimesUsed = ?", (0,))
         result = c.fetchall()

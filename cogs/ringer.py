@@ -2,10 +2,10 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import sqlite3
-from .. import lunaiterconfig
+from .. import lunaiter_config
 
 intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=lunaiterconfig.prefix, intents=intents)
+bot = commands.Bot(description="Discord Bot", command_prefix=lunaiter_config.prefix, intents=intents)
 rules = dict()
 
 class Ringer(commands.Cog):
@@ -37,7 +37,7 @@ class Ringer(commands.Cog):
         rtupl = [(r.name, r.id) for r in interaction.guild.roles if r.name == ringee]
         if ringer in all_roles and len(rtupl) > 0:
             rules[ringer] = rtupl[0:1]
-            conn = sqlite3.connect("lunaiter-data.db")
+            conn = sqlite3.connect("lunaiter_data.db")
             c = conn.cursor()
             c.execute("INSERT INTO rules(ringer, ringee) VALUES (?, ?);", (ringer, ringee))
             conn.commit()

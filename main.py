@@ -5,7 +5,7 @@ import asyncio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 import os
-import lunaiterconfig
+import lunaiter_config
 
 load_dotenv()
 
@@ -13,17 +13,17 @@ token = os.getenv('LUNAITER_TOKEN')
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
-bot = commands.Bot(description="Discord Bot", command_prefix=lunaiterconfig.prefix, intents=intents, help_command=None)
+bot = commands.Bot(description="Discord Bot", command_prefix=lunaiter_config.prefix, intents=intents, help_command=None)
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     if not check_unverified_members.is_running():
         check_unverified_members.start()
-    if not os.path.isfile("lunaiter-data.db"):
-        open("lunaiter-data.db", "x")
+    if not os.path.isfile("lunaiter_data.db"):
+        open("lunaiter_data.db", "x")
     
-    for ext in lunaiterconfig.cogs:
+    for ext in lunaiter_config.cogs:
         await bot.load_extension(ext)
         print(f"{ext} has loaded.")
 
@@ -82,7 +82,7 @@ async def on_command_error(ctx, error):
 async def check_unverified_members():
     guild = bot.get_guild(1028328656478679041)
     current_time = discord.utils.utcnow()
-    conn = sqlite3.connect("lunaiter-data.db")
+    conn = sqlite3.connect("lunaiter_data.db")
     c = conn.cursor()
     c.execute("SELECT user_id FROM join_dates WHERE join_date >= ?", (current_time - datetime.timedelta(days=4),))
     result = c.fetchall()

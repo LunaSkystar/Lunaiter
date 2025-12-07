@@ -3,13 +3,13 @@ from discord.ext import commands
 from discord import app_commands
 import random
 import sqlite3
-from .. import lunaiterconfig
+from .. import lunaiter_config
 
 intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=lunaiterconfig.prefix, intents=intents)
+bot = commands.Bot(description="Discord Bot", command_prefix=lunaiter_config.prefix, intents=intents)
 
 def row_count(table_name):
-    conn = sqlite3.connect("../lunaiter-data.db")
+    conn = sqlite3.connect("../lunaiter_data.db")
     c = conn.cursor()
     c.execute(f"SELECT COUNT(*) FROM {table_name};")
     result = c.fetchone()[0]
@@ -43,7 +43,7 @@ class Misc(commands.Cog):
     @bot.command()
     async def topic(self, ctx):
         topic_index = random.randrange(row_count("topics"))
-        conn = sqlite3.connect("../lunaiter-data.db")
+        conn = sqlite3.connect("../lunaiter_data.db")
         c = conn.cursor()
         c.execute("SELECT topic FROM topics WHERE rowid = ?", (topic_index,))
         result = c.fetchone()
@@ -59,7 +59,7 @@ class Misc(commands.Cog):
     @bot.tree.command(name="add_topic", description="[MOD ONLY] Add topics to the database")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def addtopic(self, interaction: discord.Interaction, user_id: str, topic: str):
-        conn = sqlite3.connect("../lunaiter-data.db")
+        conn = sqlite3.connect("../lunaiter_data.db")
         c = conn.cursor()
         c.execute("INSERT INTO topics VALUES (?, ?)", (user_id, topic))
         conn.commit()
@@ -69,7 +69,7 @@ class Misc(commands.Cog):
     @bot.tree.command(name="set_user", description="[ADMIN ONLY] Set user ID for a topic in the database")
     @app_commands.checks.has_permissions(manage_guild=True)
     async def set_user(self, interaction: discord.Interaction, user_id: str, rowid: int):
-        conn = sqlite3.connect("../lunaiter-data.db")
+        conn = sqlite3.connect("../lunaiter_data.db")
         c = conn.cursor()
         c.execute("UPDATE topics SET user_id = ? WHERE rowid = ?", (int(user_id), rowid))
         conn.commit()
@@ -81,7 +81,7 @@ class Misc(commands.Cog):
     @bot.tree.command(name="remove_topic", description="[MOD ONLY] Remove topics from the database")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def add_topic(self, interaction: discord.Interaction, rowid: int):
-        conn = sqlite3.connect("../lunaiter-data.db")
+        conn = sqlite3.connect("../lunaiter_data.db")
         c = conn.cursor()
         c.execute("SELECT topic FROM topics WHERE rowid = ?", rowid)
         c.execute("DELETE FROM topics WHERE rowid = ?", rowid)
@@ -93,7 +93,7 @@ class Misc(commands.Cog):
     @bot.tree.command(name="view_topic", description="[MOD ONLY] View a topic from its row ID")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def view_topic(self, interaction: discord.Interaction, rowid: str):
-        conn = sqlite3.connect("../lunaiter-data.db")
+        conn = sqlite3.connect("../lunaiter_data.db")
         c = conn.cursor()
         c.execute(f"SELECT topic FROM topics WHERE rowid = {rowid}")
         topic = c.fetchone()
@@ -103,7 +103,7 @@ class Misc(commands.Cog):
     @bot.command()
     @commands.is_owner()
     async def viewtable(self, ctx, table=None):
-        conn = sqlite3.connect("../lunaiter-data.db")
+        conn = sqlite3.connect("../lunaiter_data.db")
         c = conn.cursor()
         c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
         table_names = c.fetchall()
@@ -129,28 +129,6 @@ class Misc(commands.Cog):
             await ctx.send(response)
 
         conn.close()
-
-    @bot.command()
-    @commands.is_owner()
-    async def clearjoindates(self, ctx):
-        conn = sqlite3.connect("../lunaiter-data.db")
-        c = conn.cursor()
-        # current_time = discord.utils.utcnow()
-        c.execute("SELECT user_id FROM join_dates")
-        result = c.fetchall()
-        guild = self.bot.get_guild(1028328656478679041)
-        users = 0
-        for user_id in result:
-            if guild.get_member(user_id) is None:
-                await ctx.send(f"User with ID {user_id} cleared from join dates")
-                users += 1
-                c.execute("DELETE FROM join_dates WHERE user_id = ?", (user_id))
-                conn.commit()
-        conn.close()
-        if users > 0:
-            await ctx.send(f"{users} join dates cleared!")
-        else: 
-            await ctx.send("No join dates cleared")
 
 async def setup(bot):
     await bot.add_cog(Misc(bot))

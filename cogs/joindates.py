@@ -2,11 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import sqlite3
-import os
 
-prefix = ";"
-intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
 db_path = "lunaiter_data.db"
 
 class Joindates(commands.Cog):
@@ -44,7 +40,7 @@ class Joindates(commands.Cog):
             conn.commit()
             conn.close()
 
-    @bot.tree.command(name="clearjoindates", description="[ADMIN ONLY] Cleans up the join dates table")
+    @commands.hybrid_command(name="clearjoindates", description="[ADMIN ONLY] Cleans up the join dates table")
     @app_commands.checks.has_permissions(manage_guild=True)
     async def clearjoindates(self, interaction: discord.Interaction):
         amount = 0

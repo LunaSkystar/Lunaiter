@@ -2,11 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import sqlite3
-import os
 
-intents = discord.Intents.all()
-prefix = ";"
-bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
 rules = dict()
 db_path = "lunaiter_data.db"
 
@@ -16,7 +12,7 @@ class Ringer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @bot.tree.command(name="ring", description="Ping a certain role")
+    @commands.hybrid_command(name="ring", description="Ping a certain role")
     # @app_commands.describe(msg='the message to echo')
     async def ring(self, interaction: discord.Interaction, role: discord.Member, msg: discord.Member):
         all_roles = [r.name for r in interaction.guild.roles]
@@ -31,7 +27,7 @@ class Ringer(commands.Cog):
                         break
         else: await interaction.response.send_message(f"{role} is not a valid role", ephemeral=True)
 
-    @bot.tree.command(name="ring_new", description="[MOD ONLY] Add a new role to allow rings")
+    @commands.hybrid_command(name="ring_new", description="[MOD ONLY] Add a new role to allow rings")
     @app_commands.checks.has_permissions(manage_roles=True)
     # change to a UI/modal to select multiple roles at once
     async def ringnew(interaction: discord.Interaction, ringer: discord.Member, ringee: discord.Member):
@@ -47,7 +43,7 @@ class Ringer(commands.Cog):
             await interaction.response.send_message(f"{interaction.user.name} created a rule for {ringer}")
         else: await interaction.response.send_message(f"invalid role", ephemeral=True)
 
-    @bot.tree.command(name="ring_add", description="[MOD ONLY] Add a new role to which rings are allowed")
+    @commands.hybrid_command(name="ring_add", description="[MOD ONLY] Add a new role to which rings are allowed")
     @app_commands.checks.has_permissions(manage_roles=True)
     # @app_commands.describe(msg='the message to echo')
     async def ringadd(self, interaction: discord.Interaction, ringer: discord.Member, ringee: discord.Member):
@@ -63,14 +59,14 @@ class Ringer(commands.Cog):
                 f"rule for {ringer} does not exist", ephemeral=True
             )
 
-    @bot.tree.command(name="ring_delete", description="[MOD ONLY] Delete a role from the permitted ringers")
+    @commands.hybrid_command(name="ring_delete", description="[MOD ONLY] Delete a role from the permitted ringers")
     @app_commands.checks.has_permissions(manage_roles=True)
     async def ringdelete(self, interaction: discord.Interaction, ringer: discord.Member):
         if ringer in rules:
             del rules[ringer]
         await interaction.response.send_message(f"rule for {ringer} was removed")
 
-    @bot.tree.command(name="ring_show", description="Show existing rules")
+    @commands.hybrid_command(name="ring_show", description="Show existing rules")
     @app_commands.checks.has_permissions(manage_guild=True)
     async def ringshow(self, interaction: discord.Interaction):
         response = "\n".join([f"{r}: {rules[r]}" for r in rules])

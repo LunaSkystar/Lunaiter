@@ -3,11 +3,7 @@ from discord.ext import commands
 from discord import app_commands
 import random
 import sqlite3
-import os
 
-prefix = ";"
-intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
 db_path = "lunaiter_data.db"
 
 def row_count(table_name):
@@ -24,25 +20,11 @@ class Misc(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-#    @bot.hybrid_command(name='help', description="Get a list of commands and what they do")
-#    async def help(self, ctx: commands.Context, arg=None):
-#        if arg is None:
-#            help_message = discord.Embed(title="Help", description="Here's a list of commands", color=0xb58ed3)
-#            help_message.add_field(name="General commands", value="- `;help` gives you a list of commands\n- `;topic` gives you a random topic to talk about\n- `;number` gives you a random number between 0 and 1 million")
-#            help_message.add_field(name="Mod only", value="- `/topiclist` gives you the complete list of topics you can get with the `;topic` command\n- `/addtopic` adds a topic to the database\n- `/remove_topic` removes specified topic from the database")
-#            help_message.add_field(name="Admin only", value="- `/set_user` sets the user id for specified topic in the database\n- `;viewtable` shows the tables in the SQL database")
-#            help_message.add_field(name="Owner only", value="- `;sync` syncs the slash commands")
-#            help_message.add_field(name="Ringer", value="- `/ring` pings a certain role\n- `/ringshow` shows existing ringer rules")
-#            help_message.add_field(name="Mod only (ringer)", value="- `/ringadd` adds a new role to which rings are allowed\n- `/ringnew` adds a new role to allow rings\n- `/ringdelete` deletes a role from the permitted ringers")
-#            await ctx.send(embed=help_message)
-#        else: 
-#            ctx.send("You can't get command specific help from this command yet, please try again with just `;help`")
-
-    @bot.command()
+    @commands.command()
     async def number(self, ctx, arg=1000000):
         await ctx.send(f"This is your random number: {random.randrange(arg)}")
 
-    @bot.command()
+    @commands.command()
     async def topic(self, ctx):
         topic_index = random.randrange(row_count("topics"))
         conn = sqlite3.connect(db_path)
@@ -52,13 +34,13 @@ class Misc(commands.Cog):
         conn.close()
         await ctx.send(result[0])
     
-    @bot.tree.command(name="send", description="[MOD ONLY] Make Lunaiter send a message in a specified channel")
+    @commands.hybrid_command(name="send", description="[MOD ONLY] Make Lunaiter send a message in a specified channel")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def send(self, interaction: discord.Interaction, channel: discord.TextChannel, message: str):
         await interaction.response.send_message(f'Message sent in <#{channel.id}>', ephemeral=True)
         await channel.send(message)
 
-    @bot.tree.command(name="add_topic", description="[MOD ONLY] Add topics to the database")
+    @commands.hybrid_command(name="add_topic", description="[MOD ONLY] Add topics to the database")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def addtopic(self, interaction: discord.Interaction, user_id: str, topic: str):
         conn = sqlite3.connect(db_path)
@@ -68,7 +50,7 @@ class Misc(commands.Cog):
         conn.close()
         await interaction.response.send_message(f'Added topic "{topic}" from user <@{user_id}>')
 
-    @bot.tree.command(name="set_user", description="[ADMIN ONLY] Set user ID for a topic in the database")
+    @commands.hybrid_command(name="set_user", description="[ADMIN ONLY] Set user ID for a topic in the database")
     @app_commands.checks.has_permissions(manage_guild=True)
     async def set_user(self, interaction: discord.Interaction, user_id: str, rowid: int):
         conn = sqlite3.connect(db_path)
@@ -80,7 +62,7 @@ class Misc(commands.Cog):
         conn.close()
         await interaction.response.send_message(f'Set user {user_id} for topic "{topic}" (rowid {rowid})')
 
-    @bot.tree.command(name="remove_topic", description="[MOD ONLY] Remove topics from the database")
+    @commands.hybrid_command(name="remove_topic", description="[MOD ONLY] Remove topics from the database")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def add_topic(self, interaction: discord.Interaction, rowid: int):
         conn = sqlite3.connect(db_path)
@@ -92,7 +74,7 @@ class Misc(commands.Cog):
         conn.close()
         await interaction.response.send_message(f'Removed topic "{topic}", rowid {rowid}')
 
-    @bot.tree.command(name="view_topic", description="[MOD ONLY] View a topic from its row ID")
+    @commands.hybrid_command(name="view_topic", description="[MOD ONLY] View a topic from its row ID")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def view_topic(self, interaction: discord.Interaction, rowid: str):
         conn = sqlite3.connect(db_path)
@@ -102,16 +84,13 @@ class Misc(commands.Cog):
         conn.close()
         await interaction.response.send_message(f"{rowid}. {topic[0]}")
 
-    @bot.command()
+    @commands.command()
     @commands.is_owner()
     async def viewtable(self, ctx, table=None):
         conn = sqlite3.connect(db_path)
         c = conn.cursor()
         c.execute("SELECT name FROM sqlite_master WHERE type='table';")
         table_names = c.fetchall()
-        print(table_names)
-        print(os.path.getsize(db_path))
-        print("DB path:", db_path)
         table_names = [name[0] for name in table_names]
 
         if table is None:

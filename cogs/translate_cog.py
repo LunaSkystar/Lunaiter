@@ -3,10 +3,6 @@ from discord.ext import commands
 from deep_translator import GoogleTranslator
 from langdetect import detect
 
-prefix = ";"
-intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
-
 class Translate(commands.Cog):
     """This cog translates everything that's not english and sends a translation to message logs"""
 

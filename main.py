@@ -13,31 +13,32 @@ prefix = ";"
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
-bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents, help_command=None)
+bot = commands.Bot(command_prefix=prefix, intents=intents, description="A bot by lunaskystar for Learners Unite")
 cogs = ["cogs.misc", "cogs.joindates", "cogs.ringer", "cogs.qotd", "cogs.translate_cog"]
 
 @bot.event
 async def on_ready():
-    conn = sqlite3.connect("lunaiter_data.db")
-    c = conn.cursor()
-    table_creation = [
-        "CREATE TABLE IF NOT EXISTS join_dates (user_id INTEGER, join_date TEXT);",
-        "CREATE TABLE IF NOT EXISTS qotd (Question TEXT, TimesUsed TINYINT);",
-        "CREATE TABLE IF NOT EXISTS rules (ringer TEXT, ringee TEXT);",
-        "CREATE TABLE IF NOT EXISTS topics (user_id INTEGER, topic TEXT);"
-    ]
-    for query in table_creation:
-        c.execute(query)
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+
+    try:
+        for cog in os.listdir('./cogs'):
+            if cog.endswith('.py'):
+                await bot.load_extension(f'cogs.{cog[:-3]}')
+        print("Cog loaded:", cog)
+    except Exception as e:
+        print(f"Failed to load cog {cog}: {e}")
+
     if not check_unverified_members.is_running():
         check_unverified_members.start()
-    if not os.path.isfile("lunaiter_data.db"):
-        open("lunaiter_data.db", "x")
-        print("New database made")
-    
-    for ext in cogs:
-        await bot.load_extension(ext)
-        print(f"{ext} has loaded.")
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.errors.CommandNotFound) and ctx.message.content != ";-;":
+        await ctx.send("Wrong command. Please try ;help for more information")
+#   bot-area, bots, lunaiter
+    channels = [1028354604225802261, 1028598060378492979, 1228453461218295869]
+    if ctx.channel.id in channels:
+        await ctx.send(str(error))
 
 @bot.command()
 @commands.is_owner()
@@ -66,20 +67,6 @@ async def on_message(message):
     channel_id = message.channel.id
     if channel_id == 1028609884666732554:
         await message.add_reaction("<:neko_wave:1095663898872528967>")
-
-@bot.event
-async def on_command_error(ctx, error):
-    channel = str(ctx.channel.name)
-    username = str(ctx.author).split("#")[0]
-    user_message = str(ctx.message.content)
-    print(f"{username}: {user_message} ({channel})")
-    print(str(error))
-#   bot-area, bots, lunaiter
-    channels = [1028354604225802261, 1028598060378492979, 1228453461218295869]
-    for channel in channels:
-        if ctx.channel.id == channel:
-            if str(error) != 'Command "-;" is not found':
-                await ctx.send(str(error))
     
 #@bot.event
 #async def on_member_update(before, after):

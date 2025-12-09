@@ -2,10 +2,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import sqlite3
-from .. import lunaiter_config
 
+prefix = ";"
 intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=lunaiter_config.prefix, intents=intents)
+bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
 
 class Joindates(commands.Cog):
     """This cog handles join dates of new users so they can be kicked automatically after 4 days of being unverified."""

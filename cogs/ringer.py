@@ -2,10 +2,10 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import sqlite3
-from .. import lunaiter_config
 
 intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=lunaiter_config.prefix, intents=intents)
+prefix = ";"
+bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
 rules = dict()
 
 class Ringer(commands.Cog):

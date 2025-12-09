@@ -1,9 +1,9 @@
 from discord.ext import commands
 import discord
-from .. import lunaiter_config
 
+prefix = ";"
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=lunaiter_config.prefix, intents=intents)
+bot = commands.Bot(command_prefix=prefix, intents=intents)
 
 class MyHelp(commands.HelpCommand):
     # ;help

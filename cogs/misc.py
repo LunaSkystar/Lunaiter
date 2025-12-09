@@ -3,10 +3,10 @@ from discord.ext import commands
 from discord import app_commands
 import random
 import sqlite3
-from .. import lunaiter_config
 
+prefix = ";"
 intents = discord.Intents.all()
-bot = commands.Bot(description="Discord Bot", command_prefix=lunaiter_config.prefix, intents=intents)
+bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
 
 def row_count(table_name):
     conn = sqlite3.connect("../lunaiter_data.db")

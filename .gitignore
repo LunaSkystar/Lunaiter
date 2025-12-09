@@ -1,4 +1,4 @@
-.env
 lunaiter_data.db
 terminal_commands.txt
 todo.txt
+token.env

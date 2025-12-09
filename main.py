@@ -5,15 +5,16 @@ import asyncio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 import os
-import lunaiter_config
 
-load_dotenv()
+load_dotenv('token.env')
 
-token = os.getenv('LUNAITER_TOKEN')
+LUNAITER_TOKEN = os.getenv('LUNAITER_TOKEN')
+prefix = ";"
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
-bot = commands.Bot(description="Discord Bot", command_prefix=lunaiter_config.prefix, intents=intents, help_command=None)
+bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents, help_command=None)
+cogs = ["cogs.misc", "cogs.joindates", "cogs.ringer", "cogs.qotd", "cogs.translate_cog"]
 
 @bot.event
 async def on_ready():
@@ -23,7 +24,7 @@ async def on_ready():
     if not os.path.isfile("lunaiter_data.db"):
         open("lunaiter_data.db", "x")
     
-    for ext in lunaiter_config.cogs:
+    for ext in cogs:
         await bot.load_extension(ext)
         print(f"{ext} has loaded.")
 
@@ -99,4 +100,4 @@ async def check_unverified_members():
                 await asyncio.sleep(1)
                 await inbox_channel.send(f"Member <@{row[0]}> unverified for too long")
 
-bot.run(token)
+bot.run(LUNAITER_TOKEN)

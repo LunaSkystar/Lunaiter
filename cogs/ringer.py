@@ -2,11 +2,13 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import sqlite3
+import os
 
 intents = discord.Intents.all()
 prefix = ";"
 bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
 rules = dict()
+db_path = "lunaiter_data.db"
 
 class Ringer(commands.Cog):
     """Ringer allows users to ping certain roles that are added by mods"""
@@ -37,7 +39,7 @@ class Ringer(commands.Cog):
         rtupl = [(r.name, r.id) for r in interaction.guild.roles if r.name == ringee]
         if ringer in all_roles and len(rtupl) > 0:
             rules[ringer] = rtupl[0:1]
-            conn = sqlite3.connect("lunaiter_data.db")
+            conn = sqlite3.connect(db_path)
             c = conn.cursor()
             c.execute("INSERT INTO rules(ringer, ringee) VALUES (?, ?);", (ringer, ringee))
             conn.commit()

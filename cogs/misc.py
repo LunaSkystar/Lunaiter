@@ -3,13 +3,15 @@ from discord.ext import commands
 from discord import app_commands
 import random
 import sqlite3
+import os
 
 prefix = ";"
 intents = discord.Intents.all()
 bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
+db_path = "lunaiter_data.db"
 
 def row_count(table_name):
-    conn = sqlite3.connect("../lunaiter_data.db")
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute(f"SELECT COUNT(*) FROM {table_name};")
     result = c.fetchone()[0]
@@ -43,7 +45,7 @@ class Misc(commands.Cog):
     @bot.command()
     async def topic(self, ctx):
         topic_index = random.randrange(row_count("topics"))
-        conn = sqlite3.connect("../lunaiter_data.db")
+        conn = sqlite3.connect(db_path)
         c = conn.cursor()
         c.execute("SELECT topic FROM topics WHERE rowid = ?", (topic_index,))
         result = c.fetchone()
@@ -59,7 +61,7 @@ class Misc(commands.Cog):
     @bot.tree.command(name="add_topic", description="[MOD ONLY] Add topics to the database")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def addtopic(self, interaction: discord.Interaction, user_id: str, topic: str):
-        conn = sqlite3.connect("../lunaiter_data.db")
+        conn = sqlite3.connect(db_path)
         c = conn.cursor()
         c.execute("INSERT INTO topics VALUES (?, ?)", (user_id, topic))
         conn.commit()
@@ -69,7 +71,7 @@ class Misc(commands.Cog):
     @bot.tree.command(name="set_user", description="[ADMIN ONLY] Set user ID for a topic in the database")
     @app_commands.checks.has_permissions(manage_guild=True)
     async def set_user(self, interaction: discord.Interaction, user_id: str, rowid: int):
-        conn = sqlite3.connect("../lunaiter_data.db")
+        conn = sqlite3.connect(db_path)
         c = conn.cursor()
         c.execute("UPDATE topics SET user_id = ? WHERE rowid = ?", (int(user_id), rowid))
         conn.commit()
@@ -81,7 +83,7 @@ class Misc(commands.Cog):
     @bot.tree.command(name="remove_topic", description="[MOD ONLY] Remove topics from the database")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def add_topic(self, interaction: discord.Interaction, rowid: int):
-        conn = sqlite3.connect("../lunaiter_data.db")
+        conn = sqlite3.connect(db_path)
         c = conn.cursor()
         c.execute("SELECT topic FROM topics WHERE rowid = ?", rowid)
         c.execute("DELETE FROM topics WHERE rowid = ?", rowid)
@@ -93,7 +95,7 @@ class Misc(commands.Cog):
     @bot.tree.command(name="view_topic", description="[MOD ONLY] View a topic from its row ID")
     @app_commands.checks.has_permissions(manage_messages=True)
     async def view_topic(self, interaction: discord.Interaction, rowid: str):
-        conn = sqlite3.connect("../lunaiter_data.db")
+        conn = sqlite3.connect(db_path)
         c = conn.cursor()
         c.execute(f"SELECT topic FROM topics WHERE rowid = {rowid}")
         topic = c.fetchone()
@@ -103,30 +105,32 @@ class Misc(commands.Cog):
     @bot.command()
     @commands.is_owner()
     async def viewtable(self, ctx, table=None):
-        conn = sqlite3.connect("../lunaiter_data.db")
+        conn = sqlite3.connect(db_path)
         c = conn.cursor()
-        c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
+        c.execute("SELECT name FROM sqlite_master WHERE type='table';")
         table_names = c.fetchall()
+        print(table_names)
+        print(os.path.getsize(db_path))
+        print("DB path:", db_path)
         table_names = [name[0] for name in table_names]
 
         if table is None:
-            await ctx.send("The tables are:\n" + "\n".join(table_names))
-            return
-            
-        if table not in table_names:
+            if len(table_names) == 0:
+                await ctx.send("There are no tables.")
+            else:
+                await ctx.send("The tables are:\n" + "\n".join(table_names))
+        elif table not in table_names:
             await ctx.send(f"There is no table called {table}")
-            return
-            
-        c.execute(f"SELECT rowid, * FROM {table}")
-        result = c.fetchall()
-
-        if len(result) == 0:
-            await ctx.send(f"The table {table} is empty.")
         else:
-            response = f"Contents of table {table}:\n"
-            for row in result:
-                response += f"{row[0]}. {row[2]} `user: {row[1]}`\n"
-            await ctx.send(response)
+            c.execute(f"SELECT rowid, * FROM {table}")
+            result = c.fetchall()
+            if len(result) == 0:
+                await ctx.send(f"The table {table} is empty.")
+            else:
+                response = f"Contents of table {table}:\n"
+                for row in result:
+                    response += f"{row[0]}. {row[2]} `user: {row[1]}`\n"
+                await ctx.send(response)
 
         conn.close()
 

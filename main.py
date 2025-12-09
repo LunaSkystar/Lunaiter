@@ -18,11 +18,22 @@ cogs = ["cogs.misc", "cogs.joindates", "cogs.ringer", "cogs.qotd", "cogs.transla
 
 @bot.event
 async def on_ready():
+    conn = sqlite3.connect("lunaiter_data.db")
+    c = conn.cursor()
+    table_creation = [
+        "CREATE TABLE IF NOT EXISTS join_dates (user_id INTEGER, join_date TEXT);",
+        "CREATE TABLE IF NOT EXISTS qotd (Question TEXT, TimesUsed TINYINT);",
+        "CREATE TABLE IF NOT EXISTS rules (ringer TEXT, ringee TEXT);",
+        "CREATE TABLE IF NOT EXISTS topics (user_id INTEGER, topic TEXT);"
+    ]
+    for query in table_creation:
+        c.execute(query)
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
     if not check_unverified_members.is_running():
         check_unverified_members.start()
     if not os.path.isfile("lunaiter_data.db"):
         open("lunaiter_data.db", "x")
+        print("New database made")
     
     for ext in cogs:
         await bot.load_extension(ext)
@@ -34,7 +45,14 @@ async def sync(ctx):
     await bot.tree.sync()
     print("Command tree synced!")
     await ctx.send("Command tree synced!")
-    
+
+@bot.command()
+@commands.is_owner()
+async def reload_cogs(ctx):
+    for ext in cogs:
+        await bot.reload_extension(ext)
+        print(f"{ext} has loaded.")
+
 @bot.event
 async def on_message(message):
 #    username = str(message.author).split("#")[0]
@@ -53,7 +71,7 @@ async def on_message(message):
 async def on_command_error(ctx, error):
     channel = str(ctx.channel.name)
     username = str(ctx.author).split("#")[0]
-    user_message = str(ctx.content)
+    user_message = str(ctx.message.content)
     print(f"{username}: {user_message} ({channel})")
     print(str(error))
 #   bot-area, bots, lunaiter

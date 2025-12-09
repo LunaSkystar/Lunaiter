@@ -2,10 +2,12 @@ import discord
 from discord.ext import commands, tasks
 import datetime
 import sqlite3
+import os
 
 prefix = ";"
 intents = discord.Intents.all()
 bot = commands.Bot(description="Discord Bot", command_prefix=prefix, intents=intents)
+db_path = "lunaiter_data.db"
 
 class Buttons(discord.ui.View):
     def __init__(self, suggestion):

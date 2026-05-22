@@ -23,66 +23,12 @@ class Misc(commands.Cog):
     @commands.command()
     async def number(self, ctx, arg=1000000):
         await ctx.send(f"This is your random number: {random.randrange(arg)}")
-
-    @commands.command()
-    async def topic(self, ctx):
-        topic_index = random.randrange(row_count("topics"))
-        conn = sqlite3.connect(db_path)
-        c = conn.cursor()
-        c.execute("SELECT topic FROM topics WHERE rowid = ?", (topic_index,))
-        result = c.fetchone()
-        conn.close()
-        await ctx.send(result[0])
     
     @commands.hybrid_command(name="send", description="[MOD ONLY] Make Lunaiter send a message in a specified channel")
     @app_commands.checks.has_permissions(manage_messages=True)
-    async def send(self, interaction: discord.Interaction, channel: discord.TextChannel, message: str):
-        await interaction.response.send_message(f'Message sent in <#{channel.id}>', ephemeral=True)
+    async def send(self, ctx: commands.Context, channel: discord.TextChannel, message: str):
+        await ctx.send(f'Message sent in <#{channel.id}>', ephemeral=True)
         await channel.send(message)
-
-    @commands.hybrid_command(name="add_topic", description="[MOD ONLY] Add topics to the database")
-    @app_commands.checks.has_permissions(manage_messages=True)
-    async def addtopic(self, interaction: discord.Interaction, user_id: str, topic: str):
-        conn = sqlite3.connect(db_path)
-        c = conn.cursor()
-        c.execute("INSERT INTO topics VALUES (?, ?)", (user_id, topic))
-        conn.commit()
-        conn.close()
-        await interaction.response.send_message(f'Added topic "{topic}" from user <@{user_id}>')
-
-    @commands.hybrid_command(name="set_user", description="[ADMIN ONLY] Set user ID for a topic in the database")
-    @app_commands.checks.has_permissions(manage_guild=True)
-    async def set_user(self, interaction: discord.Interaction, user_id: str, rowid: int):
-        conn = sqlite3.connect(db_path)
-        c = conn.cursor()
-        c.execute("UPDATE topics SET user_id = ? WHERE rowid = ?", (int(user_id), rowid))
-        conn.commit()
-        c.execute("SELECT topic FROM topics WHERE rowid = ?", rowid)
-        topic = c.fetchall()
-        conn.close()
-        await interaction.response.send_message(f'Set user {user_id} for topic "{topic}" (rowid {rowid})')
-
-    @commands.hybrid_command(name="remove_topic", description="[MOD ONLY] Remove topics from the database")
-    @app_commands.checks.has_permissions(manage_messages=True)
-    async def add_topic(self, interaction: discord.Interaction, rowid: int):
-        conn = sqlite3.connect(db_path)
-        c = conn.cursor()
-        c.execute("SELECT topic FROM topics WHERE rowid = ?", rowid)
-        c.execute("DELETE FROM topics WHERE rowid = ?", rowid)
-        conn.commit()
-        topic = c.fetchall()
-        conn.close()
-        await interaction.response.send_message(f'Removed topic "{topic}", rowid {rowid}')
-
-    @commands.hybrid_command(name="view_topic", description="[MOD ONLY] View a topic from its row ID")
-    @app_commands.checks.has_permissions(manage_messages=True)
-    async def view_topic(self, interaction: discord.Interaction, rowid: str):
-        conn = sqlite3.connect(db_path)
-        c = conn.cursor()
-        c.execute(f"SELECT topic FROM topics WHERE rowid = {rowid}")
-        topic = c.fetchone()
-        conn.close()
-        await interaction.response.send_message(f"{rowid}. {topic[0]}")
 
     @commands.command()
     @commands.is_owner()

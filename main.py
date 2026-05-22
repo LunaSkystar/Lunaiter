@@ -14,7 +14,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix=prefix, intents=intents, description="A bot by lunaskystar for Learners Unite")
-cogs = ["cogs.misc", "cogs.joindates", "cogs.ringer", "cogs.qotd", "cogs.translate_cog"]
+cogs = ["cogs.misc", "cogs.joindates", "cogs.ringer", "cogs.qotd", "cogs.translate_cog", "cogs.topics"]
 
 @bot.event
 async def on_ready():

@@ -15,8 +15,11 @@ class Joindates(commands.Cog):
     async def on_member_join(self, member):
         conn = sqlite3.connect(db_path)
         c = conn.cursor()
-        join_date = member.joined_at.strftime("%Y-%m-%d %H:%M")
-        c.execute("INSERT INTO join_dates VALUES (?, ?)", (member.id, join_date))
+        join_date = member.joined_at.isoformat()
+        c.execute(
+            "INSERT INTO join_dates VALUES (?, ?)", 
+            (member.id, join_date)
+            )
         conn.commit()
         conn.close()
 

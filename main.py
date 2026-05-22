@@ -14,7 +14,7 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(command_prefix=prefix, intents=intents, description="A bot by lunaskystar for Learners Unite")
-cogs = ["cogs.misc", "cogs.joindates", "cogs.ringer", "cogs.qotd", "cogs.translate_cog", "cogs.topics"]
+cogs = ["misc", "joindates", "ringer", "qotd", "translate_cog", "topics"]
 
 @bot.event
 async def on_ready():
@@ -24,7 +24,7 @@ async def on_ready():
         for cog in os.listdir('./cogs'):
             if cog.endswith('.py'):
                 await bot.load_extension(f'cogs.{cog[:-3]}')
-        print("Cog loaded:", cog)
+                print("Cog loaded:", cog)
     except Exception as e:
         print(f"Failed to load cog {cog}: {e}")
 
@@ -50,10 +50,15 @@ async def sync(ctx):
 @bot.command()
 @commands.is_owner()
 async def reload_cogs(ctx):
-    for ext in cogs:
-        await bot.reload_extension(ext)
-        print(f"{ext} has loaded.")
-
+    try:
+        for cog in os.listdir('./cogs'):
+            if cog.endswith('.py'):
+                await bot.load_extension(f'cogs.{cog[:-3]}')
+                print("Cog loaded:", cog)
+                await ctx.send("Cog loaded:", cog)
+    except Exception as e:
+        print(f"Failed to load cog {cog}: {e}")
+        await ctx.send(f"Failed to load cog {cog}: {e}")
 @bot.event
 async def on_message(message):
 #    username = str(message.author).split("#")[0]
@@ -92,7 +97,6 @@ async def check_unverified_members():
     c = conn.cursor()
     c.execute("SELECT user_id FROM join_dates WHERE join_date >= ?", (current_time - datetime.timedelta(days=4),))
     result = c.fetchall()
-    # c.execute("DELETE FROM join_dates WHERE join_date >= ?", ((current_time - datetime.timedelta(days=4)),))
     conn.close()
     member_role = discord.utils.get(guild.roles, id=1028329664533512313)
     bot_role = discord.utils.get(guild.roles, id=1028384019320164455)

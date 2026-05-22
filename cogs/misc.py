@@ -58,6 +58,16 @@ class Misc(commands.Cog):
                 await ctx.send(response)
 
         conn.close()
+    
+    @commands.command()
+    @commands.is_owner()
+    async def deleterow(self, ctx, table, row_id):
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute(f"DELETE FROM {table} WHERE rowid={row_id}")
+        conn.commit()
+        conn.close()
+        await ctx.send(f"Row {row_id} deleted from table {table}")
 
 async def setup(bot):
     await bot.add_cog(Misc(bot))
